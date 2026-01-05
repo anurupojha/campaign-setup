@@ -412,8 +412,12 @@ def step7_processing():
     configs_needed = determine_configs_needed(inputs['campaign_type'])
 
     # Create session folder
-    session_folder = create_session_folder(inputs['campaign_name'])
-    st.success(f"✓ Created session folder: `{session_folder}`")
+    try:
+        session_folder = create_session_folder(inputs['campaign_name'])
+        st.success(f"✓ Created session folder: `{session_folder}`")
+    except Exception as e:
+        st.error(f"✗ Failed to create session folder: {e}")
+        return
 
     # Progress tracking
     progress_bar = st.progress(0)
@@ -421,32 +425,52 @@ def step7_processing():
 
     # Fetch configs
     st.subheader("Fetching Configs")
+    fetch_errors = []
     for i, config in enumerate(configs_needed):
-        status_text.text(f"Fetching {config}...")
-        if fetch_config(config, session_folder, inputs['userid'], inputs['apikey']):
-            st.success(f"✓ Fetched {config}")
-        else:
-            st.error(f"✗ Failed {config}")
+        try:
+            status_text.text(f"Fetching {config}...")
+            if fetch_config(config, session_folder, inputs['userid'], inputs['apikey']):
+                st.success(f"✓ Fetched {config}")
+            else:
+                st.error(f"✗ Failed {config}")
+                fetch_errors.append(config)
+        except Exception as e:
+            st.error(f"✗ Failed {config}: {e}")
+            fetch_errors.append(config)
         progress_bar.progress((i + 1) / (len(configs_needed) * 2))
+
+    if fetch_errors:
+        st.warning(f"⚠️ Failed to fetch {len(fetch_errors)} config(s). Continuing with available configs...")
 
     # Process configs
     st.subheader("Processing Configs")
     configs_processed = []
     for i, config in enumerate(configs_needed):
-        status_text.text(f"Processing {config}...")
-        if process_config(config, session_folder, inputs):
-            st.success(f"✓ Processed {config}")
-            configs_processed.append(config)
-        else:
-            st.error(f"✗ Failed {config}")
+        if config in fetch_errors:
+            st.warning(f"⊘ Skipping {config} (fetch failed)")
+            progress_bar.progress((len(configs_needed) + i + 1) / (len(configs_needed) * 2))
+            continue
+
+        try:
+            status_text.text(f"Processing {config}...")
+            if process_config(config, session_folder, inputs):
+                st.success(f"✓ Processed {config}")
+                configs_processed.append(config)
+            else:
+                st.error(f"✗ Failed {config}")
+        except Exception as e:
+            st.error(f"✗ Failed {config}: {e}")
         progress_bar.progress((len(configs_needed) + i + 1) / (len(configs_needed) * 2))
 
     # Generate summary
-    generate_campaign_info(session_folder, inputs, configs_processed, posted=False)
-    st.success("✓ Generated campaign_info.txt")
+    try:
+        generate_campaign_info(session_folder, inputs, configs_processed, posted=False)
+        st.success("✓ Generated campaign_info.txt")
+    except Exception as e:
+        st.error(f"✗ Failed to generate campaign_info.txt: {e}")
 
     status_text.empty()
-    progress_bar.progress(100)
+    progress_bar.progress(1.0)
 
     # Show completion
     st.markdown('<div class="success-box"><h3>✨ Campaign Setup Complete! ✨</h3></div>', unsafe_allow_html=True)
