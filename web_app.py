@@ -505,8 +505,8 @@ def step7_processing():
             st.markdown("### Posting to Production...")
             # Pass skip_confirmations=True to avoid terminal prompts
             if post_all_configs(session_folder, configs_processed, inputs['userid'], inputs['apikey'], skip_confirmations=True):
-            generate_campaign_info(session_folder, inputs, configs_processed, posted=True)
-            st.success("✨ Streak configs posted successfully! ✨")
+                generate_campaign_info(session_folder, inputs, configs_processed, posted=True)
+                st.success("✨ Streak configs posted successfully! ✨")
 
             # Update Retool config
             st.markdown("### Updating Retool Dashboard...")
