@@ -1,32 +1,58 @@
-# Campaign Setup
+# Campaign Setup Wizard
 
-Organized workspace for managing streak campaign configurations.
+Automated tool for managing streak campaign configurations. Streamlined workflow from input collection to production deployment.
 
 ## 🚀 Quick Start
 
-### Option 1: Enhanced UI (Recommended - Beautiful!)
+### First Time Setup
 
 ```bash
-cd ~/Documents/campaign_setup
+cd ~/Documents
+git clone https://github.com/anurupojha/campaign-setup.git
+cd campaign-setup
+pip3 install -r requirements.txt
+```
+
+### Daily Usage - Web Interface (Recommended)
+
+```bash
+cd ~/Documents/campaign-setup
+./start_web_app.sh
+```
+
+Opens a beautiful web interface at: http://localhost:8501
+
+**Features:**
+- 🌐 Browser-based UI (no terminal commands for end users)
+- 📋 7-step wizard with validation
+- 🎨 Visual banner selection
+- 💾 Automatic backup folder creation
+- ✅ Double confirmation before production POST
+- 📊 Summary and verification reports
+
+### Alternative - Terminal UI
+
+```bash
+cd ~/Documents/campaign-setup
 python3 ui_enhanced.py
 ```
 
 **Features:**
 - ✨ Beautiful terminal interface with colors and progress bars
-- 📋 Step-by-step wizard (7 simple steps)
+- 📋 Same 7-step wizard
 - 🎨 Tables for banner/subtitle selection
 - ✅ Live validation and smart defaults
 - 📊 Summary preview before processing
 - 🔒 Double confirmation before POST
 
-### Option 2: Command Line
+### Basic Command Line
 
 ```bash
-cd ~/Documents/campaign_setup
+cd ~/Documents/campaign-setup
 python3 setup_campaign_master.py
 ```
 
-Both scripts do the same thing:
+**Both interfaces do the same thing:**
 1. Ask you for all campaign details upfront
 2. Determine which configs are needed based on campaign type
 3. Fetch all configs from API automatically
@@ -35,6 +61,13 @@ Both scripts do the same thing:
 6. Show you exactly what to review before posting
 
 **The magic unfolds.**
+
+## 📚 Documentation
+
+- **[ONBOARDING_GUIDE.md](ONBOARDING_GUIDE.md)** - For new team members
+- **[STAKEHOLDER_GUIDE.md](STAKEHOLDER_GUIDE.md)** - Quick start for non-technical users
+- **[WEB_APP_TROUBLESHOOTING.md](WEB_APP_TROUBLESHOOTING.md)** - Common issues and fixes
+- **[STREAMLIT_CLOUD_DEPLOYMENT.md](STREAMLIT_CLOUD_DEPLOYMENT.md)** - Why not deployed to cloud
 
 ## Structure
 
