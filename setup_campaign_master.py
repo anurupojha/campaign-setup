@@ -480,6 +480,9 @@ def process_config(config_key, session_folder, inputs):
         ]
 
     elif config_key == 'STREAK_BLOCK_TEMPLATE':
+        # Generate bottom_sheet_title from per_txn_reward
+        bottom_sheet_title = f"Rs {inputs['per_txn_reward']}"
+
         cmd = [
             'python3', script_path,
             before_file,
@@ -487,7 +490,7 @@ def process_config(config_key, session_folder, inputs):
             after_file,
             inputs['campaign_id'],
             inputs['banner_url'],
-            str(inputs['per_txn_reward']),
+            bottom_sheet_title,  # Now correctly formatted: "Rs 10"
             inputs['bottom_sheet_subtitle']
         ]
 
