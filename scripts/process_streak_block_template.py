@@ -42,12 +42,19 @@ match = re.search(banner_condition_pattern, template)
 if match:
     # Case A: Banner URL exists, add to existing condition
     old_condition = match.group(1)
-    # Add our campaign to the condition with ||
-    new_condition = old_condition.rstrip(')') + f' || $!campaign_id == "{campaign_id}")'
-    template = template.replace(old_condition, new_condition, 1)
-    print(f"✓ Case A: Added campaign to existing banner condition")
-    print(f"  Old: {old_condition}")
-    print(f"  New: {new_condition}")
+
+    # Check if our campaign is already in the condition
+    if f'$!campaign_id == "{campaign_id}"' in old_condition:
+        print(f"⚠ WARNING: Campaign {campaign_id} already exists in banner condition!")
+        print(f"  Skipping banner modification to avoid duplicate.")
+    else:
+        # Add our campaign to the condition with ||
+        new_condition = old_condition.rstrip(')') + f' || $!campaign_id == "{campaign_id}")'
+        template = template.replace(old_condition, new_condition, 1)
+        print(f"✓ Case A: Added campaign to existing banner condition")
+        print(f"  Old: {old_condition}")
+        print(f"  New: {new_condition}")
+        print(f"  ⚠ Note: This banner URL is shared with other campaigns")
 else:
     # Case B: Banner URL is new, add new #elseif block BEFORE #else
     print(f"✓ Case B: Banner URL is NEW, adding new condition block")

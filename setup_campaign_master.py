@@ -586,36 +586,44 @@ def verify_config(config_key, session_folder, userid, apikey):
         return False
 
 
-def post_all_configs(session_folder, configs_processed, userid, apikey):
-    """Ask for permission and POST all configs"""
-    print_header("📤 Ready to POST to Production")
+def post_all_configs(session_folder, configs_processed, userid, apikey, skip_confirmations=False):
+    """Ask for permission and POST all configs
 
-    print(f"{Colors.YELLOW}{Colors.BOLD}IMPORTANT:{Colors.ENDC}")
-    print("You are about to POST these configs to the PRODUCTION API:")
-    for config in configs_processed:
-        print(f"  • {config}")
-    print(f"\n{Colors.YELLOW}This will modify the live production system.{Colors.ENDC}\n")
+    Args:
+        skip_confirmations: If True, skip terminal prompts (for web UI usage)
+    """
+    if not skip_confirmations:
+        print_header("📤 Ready to POST to Production")
 
-    # First confirmation
-    if not get_yes_no("Do you want to POST these configs to production now?"):
-        print_info("Skipping POST. You can manually POST later using campaign_info.txt templates.")
-        return False
+        print(f"{Colors.YELLOW}{Colors.BOLD}IMPORTANT:{Colors.ENDC}")
+        print("You are about to POST these configs to the PRODUCTION API:")
+        for config in configs_processed:
+            print(f"  • {config}")
+        print(f"\n{Colors.YELLOW}This will modify the live production system.{Colors.ENDC}\n")
 
-    # Show what will happen
-    print(f"\n{Colors.BOLD}The script will:{Colors.ENDC}")
-    print("1. POST each config one by one")
-    print("2. Show success/failure for each")
-    print("3. Fetch each config again to verify changes")
-    print("4. Save verification files as *_verify.json\n")
+        # First confirmation
+        if not get_yes_no("Do you want to POST these configs to production now?"):
+            print_info("Skipping POST. You can manually POST later using campaign_info.txt templates.")
+            return False
 
-    # Final confirmation
-    final_confirm = get_yes_no("Are you absolutely sure you want to proceed?")
-    if not final_confirm:
-        print_info("POST cancelled. Files are ready for manual review and POST.")
-        return False
+        # Show what will happen
+        print(f"\n{Colors.BOLD}The script will:{Colors.ENDC}")
+        print("1. POST each config one by one")
+        print("2. Show success/failure for each")
+        print("3. Fetch each config again to verify changes")
+        print("4. Save verification files as *_verify.json\n")
 
-    # Proceed with POST
-    print_header("⏳ Posting Configs to Production")
+        # Final confirmation
+        final_confirm = get_yes_no("Are you absolutely sure you want to proceed?")
+        if not final_confirm:
+            print_info("POST cancelled. Files are ready for manual review and POST.")
+            return False
+
+        # Proceed with POST
+        print_header("⏳ Posting Configs to Production")
+    else:
+        # Web UI mode - no terminal prompts
+        print("Posting configs to production...")
 
     posted_count = 0
     verified_count = 0
