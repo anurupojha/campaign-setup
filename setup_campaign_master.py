@@ -30,6 +30,10 @@ from pathlib import Path
 import argparse
 
 
+# Base directory for the app (works both locally and on Streamlit Cloud)
+APP_DIR = Path(__file__).parent
+
+
 # ANSI color codes for terminal output
 class Colors:
     HEADER = '\033[95m'
@@ -91,7 +95,7 @@ def get_yes_no(prompt):
 
 def load_credentials():
     """Load API credentials from credentials.json"""
-    creds_file = Path.home() / "documents" / "campaign_setup" / "credentials.json"
+    creds_file = APP_DIR / "credentials.json"
     if creds_file.exists():
         with open(creds_file, 'r') as f:
             return json.load(f)
@@ -100,28 +104,28 @@ def load_credentials():
 
 def load_banner_registry():
     """Load banner registry from JSON"""
-    registry_file = Path.home() / "documents" / "campaign_setup" / "banner_registry.json"
+    registry_file = APP_DIR / "banner_registry.json"
     with open(registry_file, 'r') as f:
         return json.load(f)
 
 
 def save_banner_registry(registry):
     """Save updated banner registry"""
-    registry_file = Path.home() / "documents" / "campaign_setup" / "banner_registry.json"
+    registry_file = APP_DIR / "banner_registry.json"
     with open(registry_file, 'w') as f:
         json.dump(registry, f, indent=2)
 
 
 def load_subtitle_templates():
     """Load subtitle templates from JSON"""
-    templates_file = Path.home() / "documents" / "campaign_setup" / "subtitle_templates.json"
+    templates_file = APP_DIR / "subtitle_templates.json"
     with open(templates_file, 'r') as f:
         return json.load(f)
 
 
 def save_subtitle_templates(templates):
     """Save updated subtitle templates"""
-    templates_file = Path.home() / "documents" / "campaign_setup" / "subtitle_templates.json"
+    templates_file = APP_DIR / "subtitle_templates.json"
     with open(templates_file, 'w') as f:
         json.dump(templates, f, indent=2)
 
@@ -327,7 +331,7 @@ def collect_campaign_inputs():
         )
 
         # Save credentials for future use
-        creds_file = Path.home() / "documents" / "campaign_setup" / "credentials.json"
+        creds_file = APP_DIR / "credentials.json"
         with open(creds_file, 'w') as f:
             json.dump({"userid": inputs['userid'], "apikey": inputs['apikey']}, f, indent=2)
         print_success("Credentials saved to credentials.json")
@@ -386,7 +390,7 @@ def fetch_config(config_key, session_folder, userid, apikey):
         if 'error' in data or 'message' in data:
             print_error(f"API Error: {data.get('error', data.get('message', 'Unknown error'))}")
             print_error("Your API credentials may be invalid or expired")
-            print_error(f"Delete {Path.home() / 'documents' / 'campaign_setup' / 'credentials.json'} and run again")
+            print_error(f"Delete {APP_DIR / 'credentials.json'} and run again")
             return False
 
         with open(output_file, 'w') as f:
@@ -397,7 +401,7 @@ def fetch_config(config_key, session_folder, userid, apikey):
     except json.JSONDecodeError as e:
         print_error(f"Failed to parse response from {config_key}: {e}")
         print_error("Your API credentials may be invalid or expired")
-        print_error(f"Delete {Path.home() / 'documents' / 'campaign_setup' / 'credentials.json'} and run again")
+        print_error(f"Delete {APP_DIR / 'credentials.json'} and run again")
         return False
     except Exception as e:
         print_error(f"Failed to fetch {config_key}: {e}")

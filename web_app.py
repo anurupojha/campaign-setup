@@ -9,8 +9,11 @@ import streamlit as st
 from pathlib import Path
 import json
 
+# Base directory for the app (works both locally and on Streamlit Cloud)
+APP_DIR = Path(__file__).parent
+
 # Import existing logic
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(APP_DIR))
 from setup_campaign_master import (
     load_credentials, load_banner_registry, load_subtitle_templates,
     determine_configs_needed, create_session_folder,
@@ -271,7 +274,7 @@ def step4_banner_selection():
                 banners.append(new_banner)
                 banner_registry['banners'] = banners
 
-                registry_file = Path.home() / "documents" / "campaign_setup" / "banner_registry.json"
+                registry_file = APP_DIR / "banner_registry.json"
                 with open(registry_file, 'w') as f:
                     json.dump(banner_registry, f, indent=2)
 
@@ -330,7 +333,7 @@ def step5_subtitle_selection():
                 subtitles.append(new_template)
                 subtitle_data['subtitles'] = subtitles
 
-                templates_file = Path.home() / "documents" / "campaign_setup" / "subtitle_templates.json"
+                templates_file = APP_DIR / "subtitle_templates.json"
                 with open(templates_file, 'w') as f:
                     json.dump(subtitle_data, f, indent=2)
 
