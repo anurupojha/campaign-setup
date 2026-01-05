@@ -73,6 +73,10 @@ if 'inputs' not in st.session_state:
     st.session_state.inputs = {}
 if 'authenticated' not in st.session_state:
     st.session_state.authenticated = False
+if 'configs_posted' not in st.session_state:
+    st.session_state.configs_posted = False
+if 'retool_data' not in st.session_state:
+    st.session_state.retool_data = None
 
 
 def show_header():
@@ -508,103 +512,118 @@ def step7_processing():
                 generate_campaign_info(session_folder, inputs, configs_processed, posted=True)
                 st.success("✨ Streak configs posted successfully! ✨")
 
-                # Update Retool config
-                st.markdown("### Updating Retool Dashboard...")
+                # Mark as posted and fetch Retool data
+                st.session_state.configs_posted = True
 
                 # Initialize API and fetch existing campaigns
                 api = HeimdalJourneyConfigAPI(inputs['userid'], inputs['apikey'])
 
                 with st.spinner("Fetching existing campaigns..."):
                     success, config_data, error = api.get_config()
-                    if not success:
-                        st.error(f"Failed to fetch config: {error}")
-                    else:
+                    if success:
                         success, value_obj, error = parse_value_field(config_data)
-                        if not success:
-                            st.error(f"Failed to parse config: {error}")
-                        else:
-                            # Get existing campaigns
-                            batch_rules = value_obj.get('batch_assignment_rules', {}).get('configs', [])
-                            journey_rules = value_obj.get('journey_rules', {}).get('configs', [])
-                            existing_campaigns = set()
-                            for config in batch_rules + journey_rules:
-                                campaign_name = config.get('config_key')
-                                if campaign_name:
-                                    existing_campaigns.add(campaign_name)
-
-                            st.info(f"Found {len(existing_campaigns)} existing campaigns")
-
-                            # Ask about chain
-                            is_chain = st.checkbox("Is this a chain campaign?", key="is_chain")
-
-                            next_campaign = "NA"
-                            if is_chain:
-                                next_campaign = st.text_input(
-                                    "Next campaign name (must exist in config)",
-                                    placeholder="e.g., snp_new_10x5_streak",
-                                    key="next_campaign"
-                                )
-
-                                # Validate
-                                if next_campaign and next_campaign != "NA":
-                                    if next_campaign in existing_campaigns:
-                                        st.success(f"✓ Found '{next_campaign}' in config")
-                                    else:
-                                        st.error(f"✗ Campaign '{next_campaign}' not found in config")
-                                        with st.expander("Show available campaigns"):
-                                            for camp in sorted(existing_campaigns)[:20]:
-                                                st.write(f"• {camp}")
-
-                            if st.button("Update Retool Config", key="update_retool"):
-                                with st.spinner("Updating Retool configuration..."):
-                                    try:
-                                        # Check duplicates
-                                        exists_in = check_campaign_exists(
-                                            inputs['campaign_id'],
-                                            inputs['campaign_name'],
-                                            value_obj
-                                        )
-
-                                        locations = [k for k, v in exists_in.items() if v]
-                                        if locations:
-                                            st.warning(f"⚠ Campaign already exists in: {', '.join(locations)}")
-                                            st.info("Campaign is already configured. No update needed.")
-                                        else:
-                                            # Add campaign
-                                            st.info(f"Adding campaign '{inputs['campaign_name']}' to Retool config...")
-
-                                            modified_value_obj = add_campaign_to_config(
-                                                inputs['campaign_name'],
-                                                inputs['campaign_id'],
-                                                next_campaign,
-                                                value_obj
-                                            )
-
-                                            # Update config
-                                            config_data['value'] = json.dumps(modified_value_obj, indent=2)
-                                            config_data['updated_by'] = f"campaign_setup_{inputs['campaign_name']}"
-
-                                            st.info("Posting update to API...")
-                                            success, message = api.update_config(config_data)
-
-                                            if success:
-                                                st.success("✅ Retool configuration updated successfully!")
-                                                st.balloons()
-                                            else:
-                                                st.error(f"✗ Retool update failed: {message}")
-                                                st.info("Check that:")
-                                                st.write("- You have write access to Retool configs")
-                                                st.write("- API credentials are correct")
-                                                st.write("- Network connection is stable")
-                                    except Exception as e:
-                                        st.error(f"❌ Error updating Retool config: {str(e)}")
-                                        st.exception(e)  # Shows full traceback for debugging
+                        if success:
+                            # Store in session state
+                            st.session_state.retool_data = {
+                                'api': api,
+                                'config_data': config_data,
+                                'value_obj': value_obj
+                            }
             else:
                 st.warning("Some configs failed to POST. Check output above.")
+
+    # Show Retool section if configs were posted (persists across reruns)
+    if st.session_state.configs_posted and st.session_state.retool_data:
+        st.markdown("---")
+        st.markdown("### Update Retool Dashboard")
+
+        retool_data = st.session_state.retool_data
+        api = retool_data['api']
+        config_data = retool_data['config_data']
+        value_obj = retool_data['value_obj']
+
+        # Get existing campaigns
+        batch_rules = value_obj.get('batch_assignment_rules', {}).get('configs', [])
+        journey_rules = value_obj.get('journey_rules', {}).get('configs', [])
+        existing_campaigns = set()
+        for config in batch_rules + journey_rules:
+            campaign_name = config.get('config_key')
+            if campaign_name:
+                existing_campaigns.add(campaign_name)
+
+        st.info(f"Found {len(existing_campaigns)} existing campaigns")
+
+        # Ask about chain
+        is_chain = st.checkbox("Is this a chain campaign?", key="is_chain")
+
+        next_campaign = "NA"
+        if is_chain:
+            next_campaign = st.text_input(
+                "Next campaign name (must exist in config)",
+                placeholder="e.g., snp_new_10x5_streak",
+                key="next_campaign"
+            )
+
+            # Validate
+            if next_campaign and next_campaign != "NA":
+                if next_campaign in existing_campaigns:
+                    st.success(f"✓ Found '{next_campaign}' in config")
+                else:
+                    st.error(f"✗ Campaign '{next_campaign}' not found in config")
+                    with st.expander("Show available campaigns"):
+                        for camp in sorted(existing_campaigns)[:20]:
+                            st.write(f"• {camp}")
+
+        if st.button("Update Retool Config", key="update_retool"):
+            with st.spinner("Updating Retool configuration..."):
+                try:
+                    # Check duplicates
+                    exists_in = check_campaign_exists(
+                        inputs['campaign_id'],
+                        inputs['campaign_name'],
+                        value_obj
+                    )
+
+                    locations = [k for k, v in exists_in.items() if v]
+                    if locations:
+                        st.warning(f"⚠ Campaign already exists in: {', '.join(locations)}")
+                        st.info("Campaign is already configured. No update needed.")
+                    else:
+                        # Add campaign
+                        st.info(f"Adding campaign '{inputs['campaign_name']}' to Retool config...")
+
+                        modified_value_obj = add_campaign_to_config(
+                            inputs['campaign_name'],
+                            inputs['campaign_id'],
+                            next_campaign,
+                            value_obj
+                        )
+
+                        # Update config
+                        config_data['value'] = json.dumps(modified_value_obj, indent=2)
+                        config_data['updated_by'] = f"campaign_setup_{inputs['campaign_name']}"
+
+                        st.info("Posting update to API...")
+                        success, message = api.update_config(config_data)
+
+                        if success:
+                            st.success("✅ Retool configuration updated successfully!")
+                            st.balloons()
+                        else:
+                            st.error(f"✗ Retool update failed: {message}")
+                            st.info("Check that:")
+                            st.write("- You have write access to Retool configs")
+                            st.write("- API credentials are correct")
+                            st.write("- Network connection is stable")
+                except Exception as e:
+                    st.error(f"❌ Error updating Retool config: {str(e)}")
+                    st.exception(e)  # Shows full traceback for debugging
 
     if st.button("🔄 Start New Campaign", key="restart"):
         st.session_state.step = 1
         st.session_state.inputs = {}
+        st.session_state.configs_posted = False
+        st.session_state.retool_data = None
         st.rerun()
 
 
