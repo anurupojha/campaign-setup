@@ -1,0 +1,20 @@
+{
+  "subtitles": [
+    {
+      "id": 1,
+      "text": "make a QR payment to \\\\nany merchant and claim cashback",
+      "description": "Default - QR payment focus"
+    },
+    {
+      "id": 2,
+      "text": "make a UPI payment to any merchant\\\\nor contact and claim cashback",
+      "description": "UPI broader - merchant or contact"
+    },
+    {
+      "id": 3,
+      "text": "make a UPI payment to claim assured ₹X cashback",
+      "description": "Assured cashback (X = per-txn amount)",
+      "has_placeholder": true
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "banners": [
+    {
+      "id": 1,
+      "callout": "Rs 10 cashback on next payment",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/727ca8e0ab4911f0b91999bd5d4e25a3.png"
+    },
+    {
+      "id": 2,
+      "callout": "Rs 25 cashback on next payment",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/ae1b9ee0b0aa11f0a681e91487a04e70.png"
+    },
+    {
+      "id": 3,
+      "callout": "Rs 30 cashback on next payment",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/e63d83f0559311f0bb81c90da4aa3b71.png"
+    },
+    {
+      "id": 4,
+      "callout": "Rs 50 cashback on next payment",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/74fb31c0d65c11f082949db3adf5404a.png"
+    },
+    {
+      "id": 5,
+      "callout": "upto Rs 50 cashback on next payment",
+      "url": "https://d1sofudel0ufia.cloudfront.net/fabrik/alerts/jul_24_streak_reward.png"
+    },
+    {
+      "id": 6,
+      "callout": "Rs 30 cashback on 3 payments",
+      "url": "https://d2tecn3vwkchpd.cloudfront.net/fabrik/patterns/p2p_streak_bottomsheet.png"
+    },
+    {
+      "id": 7,
+      "callout": "Rs 60 cashback on 3 payments",
+      "url": "https://d1sofudel0ufia.cloudfront.net/fabrik/nba/527931c0896211f0a69b4fe1cab7a1f8.png"
+    },
+    {
+      "id": 8,
+      "callout": "Rs 50 cashback on 5 payments",
+      "url": "https://d2tecn3vwkchpd.cloudfront.net/fabrik/patterns/snp_streak_bottomsheet.png"
+    },
+    {
+      "id": 9,
+      "callout": "Rs 75 cashback on 5 payments",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/f4a718d0b94c11f09808a11c11c6fd56.png"
+    },
+    {
+      "id": 10,
+      "callout": "Rs 100 cashback on 5 payments",
+      "url": "https://d2tecn3vwkchpd.cloudfront.net/fabrik/patterns/upi_streak_bottomsheet.png"
+    },
+    {
+      "id": 11,
+      "callout": "Rs 125 cashback on 5 payments",
+      "url": "https://d704ayip06922.cloudfront.net/prod-rewards-assets-data/b227653057ec11f0b48d3dc3d0510fdd.png"
+    }
+  ]
+}
