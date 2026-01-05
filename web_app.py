@@ -492,10 +492,19 @@ def step7_processing():
     st.markdown('<div class="warning-box"><h4>⚠️ POST to Production</h4></div>', unsafe_allow_html=True)
     st.warning(f"This will modify the LIVE production system. {len(configs_processed)} configs will be posted.")
 
-    if st.button("🚀 POST to Production", key="post_production"):
-        st.markdown("### Posting to Production...")
-        # Pass skip_confirmations=True to avoid terminal prompts
-        if post_all_configs(session_folder, configs_processed, inputs['userid'], inputs['apikey'], skip_confirmations=True):
+    # Add confirmation checkbox
+    confirm_post = st.checkbox(
+        "⚠️ I understand this will modify PRODUCTION and want to proceed",
+        key="confirm_post"
+    )
+
+    if st.button("🚀 POST to Production", key="post_production", disabled=not confirm_post):
+        if not confirm_post:
+            st.error("Please confirm by checking the box above")
+        else:
+            st.markdown("### Posting to Production...")
+            # Pass skip_confirmations=True to avoid terminal prompts
+            if post_all_configs(session_folder, configs_processed, inputs['userid'], inputs['apikey'], skip_confirmations=True):
             generate_campaign_info(session_folder, inputs, configs_processed, posted=True)
             st.success("✨ Streak configs posted successfully! ✨")
 
@@ -547,37 +556,49 @@ def step7_processing():
                                             st.write(f"• {camp}")
 
                         if st.button("Update Retool Config", key="update_retool"):
-                            # Check duplicates
-                            exists_in = check_campaign_exists(
-                                inputs['campaign_id'],
-                                inputs['campaign_name'],
-                                value_obj
-                            )
-
-                            locations = [k for k, v in exists_in.items() if v]
-                            if locations:
-                                st.warning(f"⚠ Campaign already exists in: {', '.join(locations)}")
-                            else:
-                                # Add campaign
-                                with st.spinner("Adding campaign to config..."):
-                                    modified_value_obj = add_campaign_to_config(
-                                        inputs['campaign_name'],
+                            with st.spinner("Updating Retool configuration..."):
+                                try:
+                                    # Check duplicates
+                                    exists_in = check_campaign_exists(
                                         inputs['campaign_id'],
-                                        next_campaign,
+                                        inputs['campaign_name'],
                                         value_obj
                                     )
 
-                                    # Update config
-                                    config_data['value'] = json.dumps(modified_value_obj, indent=2)
-                                    config_data['updated_by'] = f"campaign_setup_{inputs['campaign_name']}"
-
-                                    success, message = api.update_config(config_data)
-
-                                    if success:
-                                        st.success("✅ Retool configuration updated successfully!")
-                                        st.balloons()
+                                    locations = [k for k, v in exists_in.items() if v]
+                                    if locations:
+                                        st.warning(f"⚠ Campaign already exists in: {', '.join(locations)}")
+                                        st.info("Campaign is already configured. No update needed.")
                                     else:
-                                        st.error(f"✗ Retool update failed: {message}")
+                                        # Add campaign
+                                        st.info(f"Adding campaign '{inputs['campaign_name']}' to Retool config...")
+
+                                        modified_value_obj = add_campaign_to_config(
+                                            inputs['campaign_name'],
+                                            inputs['campaign_id'],
+                                            next_campaign,
+                                            value_obj
+                                        )
+
+                                        # Update config
+                                        config_data['value'] = json.dumps(modified_value_obj, indent=2)
+                                        config_data['updated_by'] = f"campaign_setup_{inputs['campaign_name']}"
+
+                                        st.info("Posting update to API...")
+                                        success, message = api.update_config(config_data)
+
+                                        if success:
+                                            st.success("✅ Retool configuration updated successfully!")
+                                            st.balloons()
+                                        else:
+                                            st.error(f"✗ Retool update failed: {message}")
+                                            st.info("Check that:")
+                                            st.write("- You have write access to Retool configs")
+                                            st.write("- API credentials are correct")
+                                            st.write("- Network connection is stable")
+                                except Exception as e:
+                                    st.error(f"❌ Error updating Retool config: {str(e)}")
+                                    st.exception(e)  # Shows full traceback for debugging
         else:
             st.warning("Some configs failed to POST. Check output above.")
 
