@@ -358,13 +358,13 @@ def determine_configs_needed(campaign_type):
 
 def create_session_folder(campaign_name):
     """Create session folder with proper naming"""
-    base_path = os.path.expanduser("~/Documents/campaign_setup/backups")
+    base_path = APP_DIR / "backups"
     date_str = datetime.now().strftime("%Y-%m-%d")
     folder_name = f"{date_str}_{campaign_name}"
-    folder_path = os.path.join(base_path, folder_name)
+    folder_path = base_path / folder_name
 
-    os.makedirs(folder_path, exist_ok=True)
-    return folder_path
+    folder_path.mkdir(parents=True, exist_ok=True)
+    return str(folder_path)
 
 
 def fetch_config(config_key, session_folder, userid, apikey):
@@ -426,14 +426,21 @@ def process_config(config_key, session_folder, inputs):
         print_error(f"No processing script found for {config_key}")
         return False
 
-    script_path = os.path.join(
-        os.path.expanduser("~/Documents/campaign_setup/scripts"),
-        script_name
-    )
+    script_path = str(APP_DIR / "scripts" / script_name)
 
     before_file = os.path.join(session_folder, f"{config_key}_before.json")
     after_unescaped_file = os.path.join(session_folder, f"{config_key}_after_unescaped.json")
     after_file = os.path.join(session_folder, f"{config_key}_after.json")
+
+    # Verify script exists
+    if not os.path.exists(script_path):
+        print_error(f"Script not found: {script_path}")
+        return False
+
+    # Verify before file exists
+    if not os.path.exists(before_file):
+        print_error(f"Before file not found: {before_file}. Run fetch first.")
+        return False
 
     # Build command based on config type
     if config_key == 'STREAK_ELIGIBILITY':

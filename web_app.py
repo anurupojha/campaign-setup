@@ -250,8 +250,13 @@ def step4_banner_selection():
     """Step 4: Banner Selection"""
     st.markdown('<div class="step-header"><h3>🎨 Step 4/7: Banner Selection</h3></div>', unsafe_allow_html=True)
 
-    banner_registry = load_banner_registry()
-    banners = banner_registry['banners']
+    try:
+        banner_registry = load_banner_registry()
+        banners = banner_registry['banners']
+    except Exception as e:
+        st.error(f"Failed to load banner registry: {e}")
+        st.info(f"Expected path: {APP_DIR / 'banner_registry.json'}")
+        return
 
     st.write(f"💡 Suggestion: Look for 'Rs {st.session_state.inputs['total_offer']} on {st.session_state.inputs['max_allowed']} payments'")
 
@@ -282,7 +287,11 @@ def step4_banner_selection():
     else:
         banner = banner_options[selected_banner]
         banner_url = banner['url']
-        st.image(banner_url, caption=selected_banner, use_container_width=True)
+        try:
+            st.image(banner_url, caption=selected_banner, use_container_width=True)
+        except Exception as e:
+            st.error(f"Failed to load banner image: {e}")
+            st.write(f"URL: {banner_url}")
 
     col1, col2 = st.columns(2)
     with col1:
